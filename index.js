@@ -100,17 +100,18 @@ app.get('/',(req,res) =>{
     })
 })
 app.get("/problems", (req, res) => {
-    const filteredProblems = PROBLEMS.map((x) => ({
-      problemId: x.problemId,
-      difficulty: x.difficulty,
-      acceptance: x.acceptance,
-      title: x.title,
-    }));
-  
-    res.json({
-      problems: filteredProblems,
-    });
+  const filteredProblems = PROBLEMS.map((x) => ({
+    problemId: x.problemId,
+    difficulty: x.difficulty,
+    acceptance: x.acceptance,
+    title: x.title,
+  }));
+
+  res.json({
+    problems: filteredProblems,
   });
+});
+
 
 app.get('/problem/:id', (req,res) =>{
     const id = req.params.id;
