@@ -99,7 +99,7 @@ app.get('/',(req,res) =>{
         msg:"hello world"
     })
 })
-app.get("/problems/", (req, res) => {
+app.get("/problems", (req, res) => {
     const filteredProblems = PROBLEMS.map((x) => ({
       problemId: x.problemId,
       difficulty: x.difficulty,
