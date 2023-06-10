@@ -17,7 +17,7 @@ const problemModel = require('./models/problem')
 const mongoose = require('mongoose');
 
 
-mongoose.connect('mongodb://localhost:27017/leetcodeClone', { useNewUrlParser: true,  useUnifiedTopology: true })
+mongoose.connect('mongodb+srv://priyanshu:Manu1601@cluster0.xauhuca.mongodb.net/leetcodecollect', { useNewUrlParser: true,  useUnifiedTopology: true })
   .then(() =>  console.log('Connection successfull'))
   .catch((err) => console.error('Error Occureddd!!!',err));
 
