@@ -73,27 +73,26 @@ app.delete("/deleteallproblems", (req,res) =>{
 
 
 app.get("/problems", (req, res) => {
-  problemModel.find().then(
-    (err, problems) => {
-      if (err) {
-        res.status(500).send(err);
-        }
-        else {
-          const filteredProblems = problems.map((x) => ({
-            problemId: x.problemId,
-            difficulty: x.difficulty,
-            acceptance: x.acceptance,
-            title: x.title,
-          })
-  )
+  problemModel.find()
+  .then((problems) => {
+      const filteredProblems = problems.map((x) => ({
+          problemId: x.problemId,
+          difficulty: x.difficulty,
+          acceptance: x.acceptance,
+          title: x.title,
+        })
+      )
       
         res.json({
           problems: filteredProblems,
         });
       }
-  });
+  )
+  .catch((err) =>{
+    res.status(500).send(err);
+  })
   
-});
+})
 
 
 app.get('/problem/:id', async (req,res) =>{
