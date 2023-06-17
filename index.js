@@ -13,7 +13,7 @@ const cors = require("cors");
 app.use(cors());
 app.use(jsonParser);
 const userModel = require('./models/user')
-const problemModel = require('./models/problem')
+const problemModel = require('./models/problem')                    
 const mongoose = require('mongoose');
 
 
@@ -73,12 +73,11 @@ app.delete("/deleteallproblems", (req,res) =>{
 
 
 app.get("/problems", (req, res) => {
-  problemModel.find()
+  problemModel.find({})
   .then((problems) => {
       const filteredProblems = problems.map((x) => ({
           problemId: x.problemId,
           difficulty: x.difficulty,
-          acceptance: x.acceptance,
           title: x.title,
         })
       )
