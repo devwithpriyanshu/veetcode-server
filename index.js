@@ -76,7 +76,7 @@ app.get("/problems", (req, res) => {
   problemModel.find({})
   .then((problems) => {
       const filteredProblems = problems.map((x) => ({
-          problemId: x.problemId,
+          problemId: x.id,
           difficulty: x.difficulty,
           title: x.title,
         })
