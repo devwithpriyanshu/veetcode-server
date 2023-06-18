@@ -84,10 +84,11 @@ app.get("/problems", (req, res) => {
       
         res.json({
           problems: filteredProblems,
-        });
+        }); 
       }
   )
   .catch((err) =>{
+    console.log(err)
     res.status(500).send(err);
   })
   

@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 
-// Define the problem schema
 const problemSchema = new mongoose.Schema({
   
   id: {
@@ -44,5 +43,4 @@ const problemSchema = new mongoose.Schema({
 });
 
 
-
-module.exports = mongoose.model('Problem', problemSchema);
+module.exports = mongoose.model('problems', problemSchema);
