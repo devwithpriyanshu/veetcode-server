@@ -15,7 +15,11 @@ app.use(jsonParser);
 const userModel = require('./models/user')
 const problemModel = require('./models/problem')                    
 const mongoose = require('mongoose');
-
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+})
 
 mongoose.connect('mongodb+srv://priyanshu:Manu1601@cluster0.xauhuca.mongodb.net/leetcodecollect', { useNewUrlParser: true,  useUnifiedTopology: true })
   .then(() =>  console.log('Connection successfull'))
