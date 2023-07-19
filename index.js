@@ -1,6 +1,8 @@
 const express = require("express");
 const app = express();
 const port = process.env.PORT || 5001;
+const connectDB = require('./db/connect');
+require('dotenv').config();
 var jwt = require("jsonwebtoken");
 const { auth } = require("./middleware");
 let USER_ID_COUNTER = 1;
@@ -15,16 +17,25 @@ app.use(jsonParser);
 const userModel = require('./models/user')
 const problemModel = require('./models/problem')                    
 const mongoose = require('mongoose');
+
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 })
 
-mongoose.connect('mongodb+srv://priyanshu:Manu1601@cluster0.xauhuca.mongodb.net/leetcodecollect', { useNewUrlParser: true,  useUnifiedTopology: true })
-  .then(() =>  console.log('Connection successfull'))
-  .catch((err) => console.error('Error Occureddd!!!',err));
+const start = async () => {
+  try {
+    await connectDB(process.env.MONGO_URI);
+    app.listen(port, () =>
+      console.log(`Server is listening on port ${port}...`)
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
 
+start();
 
 app.get('/',(req,res) =>{
     res.json({
@@ -198,10 +209,8 @@ app.post("/login", (req, res) => {
     }
   });
 
-  if(process.env.NODE_ENV = 'production'){
+  if(process.env.NODE_ENV === 'production'){
     app.use(express.static("client/build"));
   }
   
-app.listen(port, () => {
-    console.log(`Application running on ${port}`)
-})
+
