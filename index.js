@@ -18,6 +18,8 @@ const userModel = require('./models/user')
 const problemModel = require('./models/problem')                    
 const mongoose = require('mongoose');
 
+// const userDocument = await problemModel.findById(someId).populate('user');
+
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -129,28 +131,26 @@ app.get('/me', auth,(req,res) =>{
     res.json({ email: user.email, id: user.id });
 })
 
-app.post("/signup", (req, res) => {
-    const email = req.body.email;
-    const password = req.body.password;
-    if (USERS.find((x) => x.email === email)) {
-      return res.status(403).json({ msg: "Email already exists" });
+app.post("/signup", async (req, res) => {
+    
+  try{
+    const userData = await userModel.create(req.body)
+    if (userModel.findOne({email:req.body.email})) {
+      throw new Error("Email already exists");
     }
   
-    USERS.push({
-      email,
-      password,
-      id: USER_ID_COUNTER++,
+    res.json({
+      msg: "Success", userData
     });
-  
-    return res.json({
-      msg: "Success",
-    });
+    }catch(error){
+      res.json({ status: 'error', msg: error})
+    }
   });
 
-app.post("/login", (req, res) => {
+app.post("/login", async (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
-    const user = USERS.find((x) => x.email === email);
+    const user = await userModel.findOne({email:email});
   
     if (!user) {
       return res.status(403).json({ msg: "User not found" });
@@ -166,7 +166,7 @@ app.post("/login", (req, res) => {
       },
       JWT_SECRET
     );
-  
+  //fix this bug it returns token even after failed login
     return res.json({ token });
     
   });
@@ -212,5 +212,3 @@ app.post("/login", (req, res) => {
   if(process.env.NODE_ENV === 'production'){
     app.use(express.static("client/build"));
   }
-  
-
