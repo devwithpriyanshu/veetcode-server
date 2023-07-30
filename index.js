@@ -41,7 +41,7 @@ start();
 
 app.get('/',(req,res) =>{
     res.json({
-        msg:"hello world"
+        msg:"hello world, this is veetcode api"
     })
 })
 const generateNewId = async () => {
@@ -134,16 +134,20 @@ app.get('/me', auth,(req,res) =>{
 app.post("/signup", async (req, res) => {
     
   try{
-    const userData = await userModel.create(req.body)
-    if (userModel.findOne({email:req.body.email})) {
+    const existingUser = await userModel.findOne({email:req.body.email});
+    if (existingUser) {
       throw new Error("Email already exists");
     }
-  
+
+    const userData = await userModel.create(req.body).then(result => {
+      console.log(result);
+    })
+
     res.json({
-      msg: "Success", userData
+      msg: "User Added", userData
     });
     }catch(error){
-      res.json({ status: 'error', msg: error})
+      res.json({ status: 'error', error})
     }
   });
 
@@ -167,46 +171,55 @@ app.post("/login", async (req, res) => {
       JWT_SECRET
     );
   //fix this bug it returns token even after failed login
-    return res.json({ token });
+    return res.json({ token: token });
     
   });
 
-  app.get("/submissions/:problemId", auth, (req, res) => {
+  app.get("/submissions/:problemId",  async (req, res) => {
     const problemId = req.params.problemId;
-    const submissions = SUBMISSIONS.filter(
-      (x) => x.problemId === problemId && x.userId === req.userId
-    );
+    const submissions = await problemModel.findOne({id:problemId},'submissions').exec();
     res.json({
       submissions,
     });
   });
   
-  app.post("/submission", auth, (req, res) => {
+  app.post("/submission", auth, async (req, res) => {
     const isCorrect = Math.random() < 0.5;
     const problemId = req.body.problemId;
     const submission = req.body.submission;
+
+    try{
+    const temp = await problemModel.findOne({id:problemId}).populate('submissions.user').exec();
+    const allSubmissions = temp.submissions;
+    const userId = req.userId;
   
     if (isCorrect) {
-      SUBMISSIONS.push({
-        submission,
-        problemId,
-        userId: req.userId,
-        status: "AC",
+      allSubmissions.push({
+        code:submission,
+        user: userId,
+        result: "Accepted",
       });
-      return res.json({
-        status: "AC",
-      });
+      
     } else {
-      SUBMISSIONS.push({
-        submission,
-        problemId,
-        userId: req.userId,
-        status: "WA",
+      allSubmissions.push({
+        code:submission,
+        user: userId,
+        result: "Wrong Answer",
       });
+      await temp.save();
       return res.json({
-        status: "WA",
+        status: isCorrect ? "AC" : "WA",
       });
     }
+
+  }catch(error){
+    console.error(error);
+    return res.status(500).json({
+      status: "error",
+      msg: "An error occurred while processing the submission.",
+    });
+  }
+    
   });
 
   if(process.env.NODE_ENV === 'production'){
