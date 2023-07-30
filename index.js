@@ -130,28 +130,30 @@ app.get('/me', auth,(req,res) =>{
     res.json({ email: user.email, id: user.id });
 })
 
-app.post("/signup", (req, res) => {
-    const email = req.body.email;
-    const password = req.body.password;
-    if (USERS.find((x) => x.email === email)) {
-      return res.status(403).json({ msg: "Email already exists" });
+app.post("/signup", async (req, res) => {
+    
+  try{
+    const existingUser = await userModel.findOne({email:req.body.email});
+    if (existingUser) {
+      throw new Error("Email already exists");
     }
-  
-    USERS.push({
-      email,
-      password,
-      id: USER_ID_COUNTER++,
+
+    const userData = await userModel.create(req.body).then(result => {
+      console.log(result);
+    })
+
+    res.json({
+      msg: "User Added", userData
     });
-  
-    return res.json({
-      msg: "Success",
-    });
+    }catch(error){
+      res.json({ status: 'error', error})
+    }
   });
 
-app.post("/login", (req, res) => {
+  app.post("/login", async (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
-    const user = USERS.find((x) => x.email === email);
+    const user = await userModel.findOne({email:email});
   
     if (!user) {
       return res.status(403).json({ msg: "User not found" });
@@ -167,8 +169,8 @@ app.post("/login", (req, res) => {
       },
       JWT_SECRET
     );
-  
-    return res.json({ token });
+  //fix this bug it returns token even after failed login
+    return res.json({ token: token });
     
   });
 
@@ -182,32 +184,51 @@ app.post("/login", (req, res) => {
     });
   });
   
-  app.post("/submission", auth, (req, res) => {
+  app.get("/submissions/:problemId",  async (req, res) => {
+    const problemId = req.params.problemId;
+    const submissions = await problemModel.findOne({id:problemId},'submissions').exec();
+    res.json({
+      submissions,
+    });
+  });
+  
+  app.post("/submission", auth, async (req, res) => {
     const isCorrect = Math.random() < 0.5;
     const problemId = req.body.problemId;
     const submission = req.body.submission;
+
+    try{
+    const temp = await problemModel.findOne({id:problemId}).populate('submissions.user').exec();
+    const allSubmissions = temp.submissions;
+    const userId = req.userId;
   
     if (isCorrect) {
-      SUBMISSIONS.push({
-        submission,
-        problemId,
-        userId: req.userId,
-        status: "AC",
+      allSubmissions.push({
+        code:submission,
+        user: userId,
+        result: "Accepted",
       });
-      return res.json({
-        status: "AC",
-      });
+      
     } else {
-      SUBMISSIONS.push({
-        submission,
-        problemId,
-        userId: req.userId,
-        status: "WA",
+      allSubmissions.push({
+        code:submission,
+        user: userId,
+        result: "Wrong Answer",
       });
+      await temp.save();
       return res.json({
-        status: "WA",
+        status: isCorrect ? "AC" : "WA",
       });
     }
+
+  }catch(error){
+    console.error(error);
+    return res.status(500).json({
+      status: "error",
+      msg: "An error occurred while processing the submission.",
+    });
+  }
+    
   });
 
   if(process.env.NODE_ENV === 'production'){
