@@ -26,8 +26,8 @@ app.use(function (req, res, next) {
 
 const start = async () => {
   try {
-    const uri = process.env.MONGO_URI;
-    await connectDB(uri);
+   
+    await connectDB('mongodb+srv://priyanshu:Manu1601@cluster0.xauhuca.mongodb.net/leetcodecollect');
     app.listen(port, () =>
       console.log(`Server is listening on port ${port}...`)
     );
