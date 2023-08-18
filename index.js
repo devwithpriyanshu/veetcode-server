@@ -153,9 +153,9 @@ app.post("/signup", async (req, res) => {
   });
 
 app.post("/login", async (req, res) => {
-    const email = req.body.email;
+    const username = req.body.username;
     const password = req.body.password;
-    const user = await userModel.findOne({email:email});
+    const user = await userModel.findOne({username:username});
   
     if (!user) {
       return res.status(403).json({ msg: "User not found" });
@@ -188,23 +188,26 @@ app.post("/login", async (req, res) => {
     const isCorrect = Math.random() < 0.5;
     const problemId = req.body.problemId;
     const submission = req.body.submission;
+    const language = req.body.language;
 
     try{
-    const temp = await problemModel.findOne({id:problemId}).populate('submissions.user').exec();
+    const temp = await problemModel.findOne({id:problemId}).populate('submissions.username').exec();
     const allSubmissions = temp.submissions;
-    const userId = req.userId;
+    const username = req.body.username; 
   
     if (isCorrect) {
       allSubmissions.push({
         code:submission,
-        user: userId,
+        language: language,    //update required
+        username: username,
         result: "Accepted",
       });
       
     } else {
       allSubmissions.push({
         code:submission,
-        user: userId,
+        language: language,    // update required
+        username: username,
         result: "Wrong Answer",
       });
       await temp.save();
@@ -212,7 +215,7 @@ app.post("/login", async (req, res) => {
         status: isCorrect ? "AC" : "WA",
       });
     }
-
+    
   }catch(error){
     console.error(error);
     return res.status(500).json({
@@ -220,7 +223,6 @@ app.post("/login", async (req, res) => {
       msg: "An error occurred while processing the submission.",
     });
   }
-    
   });
 
   if(process.env.NODE_ENV === 'production'){
